@@ -64,7 +64,7 @@
       <br><br><br><br><br><br>
         <h1>업데이트 정보</h1>
         
-               <p class="lead mb-0" >220720 ver1. mainPage UI 구성(이지후)</p>
+               <p class="lead mb-0" >220720 ver1. mainPage UI 구성</p>
                <p class="lead mb-0" >220815 ver2. 쇼핑몰 업데이트</p>
       </div>        
       <div id="section3">
