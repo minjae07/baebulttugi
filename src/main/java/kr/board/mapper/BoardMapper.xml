@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kr.board.mapper.BoardMapper">
+
+	<select id="getLists" resultType="kr.board.entity.Board">
+		SELECT
+			 IDX
+			,MEMID
+			,TITLE
+			,CONTENT
+			,WRITER
+			,INDATE
+			,COUNT
+		FROM BOARD
+		ORDER BY IDX DESC
+	</select>
+
+	<insert id="boardInsert" parameterType="kr.board.entity.Board">
+		INSERT INTO BOARD (IDX,
+		memID, TITLE, CONTENT, WRITER)
+		VALUES(BOARD_IDX.NEXTVAL, #{memID}, #{title}, #{content}, #{writer})
+
+	</insert>
+
+	<select id="boardContent" resultType="kr.board.entity.Board">
+		SELECT * FROM BOARD WHERE IDX=#{idx}
+	</select>
+
+	<delete id="boardDelete" parameterType="int">
+		DELETE FROM BOARD WHERE IDX=#{idx}
+	</delete>
+
+ 	<update id="boardUpdate" parameterType="kr.board.entity.Board">
+		UPDATE BOARD 
+		SET 
+			 TITLE=#{title}
+			,CONTENT=#{content}
+		WHERE 
+			 IDX=#{idx}
+	</update> 
+	
+	<select id="getbestList" resultType="kr.board.entity.TblBoard">
+	select *
+		from (
+			select *
+			from tblBoard
+			order by count desc
+		)
+	where rownum <![CDATA[ <= ]]> 3
+	</select>
+	
+	<select id="getListCount" resultType="kr.board.entity.Board">
+	SELECT 
+			memID, COUNT(memID) FROM board
+	GROUP BY memID
+	HAVING COUNT(memID) <![CDATA[ >= ]]> 0
+	</select>
+	
+
+	<select id="getList" parameterType="kr.board.entity.TblBoard" resultType="kr.board.entity.TblBoard">
+		 
+		SELECT * 
+		FROM TBLBOARD 
+		WHERE 1=1
+		<if test="searchType != null">
+			<if test="searchType == 'title'">
+					AND title LIKE '%'|| #{keyword} || '%'
+			</if>
+			<if test="searchType == 'writer'">
+					AND writer LIKE '%'|| #{keyword} || '%'
+			</if>
+			<if test="searchType == 'content'">
+					AND content LIKE '%'|| #{keyword} || '%'
+			</if>
+		</if>
+		ORDER BY boardGroup DESC
+	</select>
+	
+	<insert id="insert" parameterType="kr.board.entity.TblBoard">
+		insert into
+		tblBoard(TBLBOARD_seq.nextval,memID,title,content,writer,boardGroup,boardSequence,boardLevel,boardAvailable)
+				select	NVL(max(idx)+1, 1),#{memID},#{title},#{content},#{writer},
+						NVL(max(boardGroup)+1, 0),0,0,1
+				from tblBoard
+	</insert>
+	
+	<insert id="insertSelectKey" parameterType="kr.board.entity.TblBoard">
+		<selectKey keyProperty="idx,boardGroup" resultType="kr.board.entity.TblBoard" order="BEFORE">
+			select NVL(max(idx)+1, 1) as idx,
+				   NVL(max(boardGroup)+1, 0) as boardGroup
+			from tblBoard
+		</selectKey>
+		INSERT INTO 
+		tblBoard(idx,memID,title,content,writer,boardGroup,boardSequence,boardLevel,boardAvailable)
+	    values(#{idx},#{memID},#{title},#{content},#{writer},#{boardGroup},0,0,1) 
+		
+	</insert>
+	
+	<select id="read" resultType="kr.board.entity.TblBoard" parameterType="Integer">
+		SELECT idx
+			 , memID
+			 , indate
+			 , title
+			 , content
+			 , writer
+		  FROM TBLBOARD
+		 WHERE IDX = #{idx}
+	</select>
+	
+	<update id="count" parameterType="Integer">
+	UPDATE TBLBOARD
+	SET COUNT= NVL(COUNT,0) + 1
+	WHERE IDX=#{idx}
+	</update>
+
+	<update id="update" parameterType="kr.board.entity.TblBoard">
+    UPDATE TBLBOARD 
+    SET TITLE = #{title,jdbcType=VARCHAR}, CONTENT=#{content,jdbcType=VARCHAR}
+    WHERE IDX=#{idx,jdbcType=INTEGER}
+	</update>
+	
+	<delete id="delete">
+		delete
+		from TBLBOARD
+		where IDX=#{idx}
+		
+	</delete>
+</mapper>
